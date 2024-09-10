@@ -15,15 +15,22 @@ def main() -> None:
     # Scan Outlook folder and save attachments
     scan_outlook(folder_name, save_path, email)
 
-def scan_outlook(folder_name: str, save_path: str, email: str) -> None:
+def scan_outlook(folder_path: str, save_path: str, email: str) -> None:
     # Connect to Outlook application
     outlook = win32com.client.Dispatch("Outlook.Application").GetNamespace("MAPI")
 
-    # Access the specified folder
-    folder = outlook.Folders.Item(email)  # Use the email provided by the user
-    target_folder = folder.Folders.Item(folder_name)
+    # Access the root folder of the specified email
+    folder = outlook.Folders.Item(email)
+    
+    # Split the folder path into subfolders
+    folders = folder_path.split('/')
+    
+    # Navigate through subfolders
+    target_folder = folder
+    for subfolder in folders:
+        target_folder = target_folder.Folders.Item(subfolder)
 
-    # Iterate through each item (email) in the folder
+    # Iterate through each item (email) in the target folder
     for item in target_folder.Items:
         pull_attachment(item, save_path)
 
