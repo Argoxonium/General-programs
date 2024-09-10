@@ -6,7 +6,9 @@ def main() -> None:
     # Get user input for email and folder name
     email = input("What is your email: ")
     folder_path = input("Enter the folder path (e.g., 'Inbox/FIM'): ")
-    save_path = r"C:\Users\nhorn\Downloads"  # Update this to your desired save path
+
+    # Set the save path to the user's Downloads directory
+    save_path = os.path.join(os.path.expanduser('~'), 'Downloads')
 
     # Ensure the save path exists
     if not os.path.exists(save_path):
@@ -14,6 +16,7 @@ def main() -> None:
 
     # Scan Outlook folder and save attachments
     scan_outlook(folder_path, save_path, email)
+
 
 def scan_outlook(folder_path: str, save_path: str, email: str) -> None:
     # Connect to Outlook application
