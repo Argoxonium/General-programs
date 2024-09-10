@@ -1,19 +1,42 @@
 import os
 import win32com.client
 import traceback
+import configparser
 
 def main() -> None:
+    #get config information
+    config = start_config(r"C:\Users\nhorn\Documents\Program Files Storage\config get_attachment.ini")
+    
     # Get user input for email and folder name
-    email = input("What is your email: ")
-    folder_path = input("Enter the folder path (e.g., 'Inbox/FIM'): ")
+    email = config.get('Path','Email')
+    partial_folder_path = config.get('Path','folder_path')
+    month = input('what month would you like to download?: ')
+    year = input('What year would you like to download?: ')
+    month_year = f'{month} {year}'
+    
+    # Construct the full folder path by appending the month to the partial path
+    folder_path = os.path.join(partial_folder_path, month_year)
     
     #ensure that the save location exists and is ready
-    save_path = save_location()
-
+    save_path = save_location(config.get('Path','save_path'))
 
     # Scan Outlook folder and save attachments
     scan_outlook(folder_path, save_path, email)
 
+def start_config(config_path:str) -> configparser.ConfigParser:
+    # Initialize the ConfigParser
+    config = configparser.ConfigParser()
+
+    # Check if the provided path exists
+    if os.path.exists(config_path):
+        # Read the configuration file
+        config.read(config_path)
+        print(f"Configuration loaded from {config_path}")
+    else:
+        # Raise an error if the configuration file does not exist
+        raise FileNotFoundError(f"The configuration file at {config_path} was not found.")
+
+    return config
 
 def scan_outlook(folder_path: str, save_path: str, email: str) -> None:
     # Connect to Outlook application
@@ -68,9 +91,9 @@ def save_attachment(attachment, save_path: str) -> None:
         traceback.print_exc()  # Optional: log the full traceback for debugging
 
 
-def save_location() -> os.path:
+def save_location(folder_location: str='Downloads') -> os.path:
     # Set the save path to the user's Downloads directory
-    save_path = os.path.join(os.path.expanduser('~'), 'Downloads')
+    save_path = os.path.join(os.path.expanduser('~'), folder_location)
 
     # Ensure the save path exists
     if not os.path.exists(save_path):
