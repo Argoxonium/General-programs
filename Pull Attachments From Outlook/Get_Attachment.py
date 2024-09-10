@@ -1,19 +1,19 @@
 import os
 import win32com.client
-
+import traceback
 
 def main() -> None:
     # Get user input for email and folder name
     email = input("What is your email: ")
-    folder_name = input("What folder would you like us to review: ")
-    save_path = r"C:\Users\nhorn\Downloads"  # Replace with your desired save path
+    folder_path = input("Enter the folder path (e.g., 'Inbox/FIM'): ")
+    save_path = r"C:\Users\nhorn\Downloads"  # Update this to your desired save path
 
     # Ensure the save path exists
     if not os.path.exists(save_path):
         os.makedirs(save_path)
 
     # Scan Outlook folder and save attachments
-    scan_outlook(folder_name, save_path, email)
+    scan_outlook(folder_path, save_path, email)
 
 def scan_outlook(folder_path: str, save_path: str, email: str) -> None:
     # Connect to Outlook application
@@ -32,14 +32,22 @@ def scan_outlook(folder_path: str, save_path: str, email: str) -> None:
 
     # Iterate through each item (email) in the target folder
     for item in target_folder.Items:
-        pull_attachment(item, save_path)
+        try:
+            pull_attachment(item, save_path)
+        except Exception as e:
+            print(f"Skipping an item due to error: {e}")
+            traceback.print_exc()  # Optional: log the full traceback for debugging
 
 def pull_attachment(item, save_path: str) -> None:
-    # Check if the item is an email and has attachments
-    if item.Attachments.Count > 0:
-        # Iterate through each attachment in the email
-        for attachment in item.Attachments:
-            save_attachment(attachment, save_path)
+    try:
+        # Check if the item is an email and has attachments
+        if item.Attachments.Count > 0:
+            # Iterate through each attachment in the email
+            for attachment in item.Attachments:
+                save_attachment(attachment, save_path)
+    except Exception as e:
+        print(f"Error processing item: {e}")
+        traceback.print_exc()  # Optional: log the full traceback for debugging
 
 def save_attachment(attachment, save_path: str) -> None:
     # Construct the full path to save the attachment
@@ -55,6 +63,7 @@ def save_attachment(attachment, save_path: str) -> None:
         print(f"Attachment {attachment.FileName} saved to {save_path}")
     except Exception as e:
         print(f"Failed to save attachment {attachment.FileName}: {e}")
+        traceback.print_exc()  # Optional: log the full traceback for debugging
 
 if __name__ == "__main__":
     main()
