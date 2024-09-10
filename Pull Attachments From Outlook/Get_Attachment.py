@@ -6,13 +6,10 @@ def main() -> None:
     # Get user input for email and folder name
     email = input("What is your email: ")
     folder_path = input("Enter the folder path (e.g., 'Inbox/FIM'): ")
+    
+    #ensure that the save location exists and is ready
+    save_path = save_location()
 
-    # Set the save path to the user's Downloads directory
-    save_path = os.path.join(os.path.expanduser('~'), 'Downloads')
-
-    # Ensure the save path exists
-    if not os.path.exists(save_path):
-        os.makedirs(save_path)
 
     # Scan Outlook folder and save attachments
     scan_outlook(folder_path, save_path, email)
@@ -67,6 +64,16 @@ def save_attachment(attachment, save_path: str) -> None:
     except Exception as e:
         print(f"Failed to save attachment {attachment.FileName}: {e}")
         traceback.print_exc()  # Optional: log the full traceback for debugging
+
+def save_location() -> os.path:
+    # Set the save path to the user's Downloads directory
+    save_path = os.path.join(os.path.expanduser('~'), 'Downloads')
+
+    # Ensure the save path exists
+    if not os.path.exists(save_path):
+        os.makedirs(save_path)
+    
+    return save_path
 
 if __name__ == "__main__":
     main()
