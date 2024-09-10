@@ -38,6 +38,7 @@ def scan_outlook(folder_path: str, save_path: str, email: str) -> None:
             print(f"Skipping an item due to error: {e}")
             traceback.print_exc()  # Optional: log the full traceback for debugging
 
+
 def pull_attachment(item, save_path: str) -> None:
     try:
         # Check if the item is an email and has attachments
@@ -48,6 +49,7 @@ def pull_attachment(item, save_path: str) -> None:
     except Exception as e:
         print(f"Error processing item: {e}")
         traceback.print_exc()  # Optional: log the full traceback for debugging
+
 
 def save_attachment(attachment, save_path: str) -> None:
     # Construct the full path to save the attachment
@@ -64,6 +66,7 @@ def save_attachment(attachment, save_path: str) -> None:
     except Exception as e:
         print(f"Failed to save attachment {attachment.FileName}: {e}")
         traceback.print_exc()  # Optional: log the full traceback for debugging
+
 
 def save_location() -> os.path:
     # Set the save path to the user's Downloads directory
