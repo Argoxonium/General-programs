@@ -23,6 +23,9 @@ def main() -> None:
     # Scan Outlook folder and save attachments
     scan_outlook(folder_path, save_path, email)
 
+    print('Attachment extraction complete. Files have been extracted to the Downloads folder')
+    input('Enter anything to Exit program:')
+
 def start_config(config_path:str) -> configparser.ConfigParser:
     # Initialize the ConfigParser
     config = configparser.ConfigParser()
