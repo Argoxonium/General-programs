@@ -23,9 +23,9 @@ def main() -> None:
 
     #create a new path
     save_path = new_path(path)
-    
+
     #save the document
-    save_doc(new_doc,path)
+    save_doc(new_doc,save_path)
 
 def open_word_document(file_path: str) -> Document:
     """
