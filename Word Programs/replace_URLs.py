@@ -1,0 +1,19 @@
+import re
+import os
+import logging
+import win32com.client as win32  # Import the win32 client for Word automation
+
+def main() -> None: ...
+
+def get_doc(path: str): ...
+
+def get_url(doc) -> list: ...
+
+def change_url(urls: list) -> list: ...
+
+def update_urls_in_doc(doc, modified_urls: list) -> None: ...
+
+def save_doc(doc, path: str) -> None: ...
+
+if __name__ == '__main__':
+    main()
