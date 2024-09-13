@@ -8,11 +8,24 @@ from lxml import etree
 def main() -> None:
     #Get the path and open the word document
     path = input('What is the path location for the word document')
+
+    #open the word document from the inputted path
     doc = open_word_document(path)
+
+    #extract all the hypelinks within the document
     hyperlinks = extract_hyperlinks(doc)
+
+    #change the hyperlinks with the new goal code in mind
     new_hyperlinks = change_url(hyperlinks,"https://my.anl.gov/esb/view/")
-    print(hyperlinks)
-    print(new_hyperlinks)
+
+    #update urls within the document
+    new_doc = update_urls_in_doc(doc,new_hyperlinks)
+
+    #create a new path
+    save_path = new_path(path)
+    
+    #save the document
+    save_doc(new_doc,path)
 
 def open_word_document(file_path: str) -> Document:
     """
@@ -126,12 +139,97 @@ def edit_url(old_url: str, new_url: str) -> str:
 
     return new_full_url
     
-def update_urls_in_doc(doc: Document, modified_urls: dict) -> Document:
-    """
-    This function will replace the urls within the Document with the edited ones gather from the dict. 
-    """
 
-def save_doc(doc, path: str) -> None: ...
+def update_urls_in_doc(doc: Document, modified_urls: dict[str, str]) -> Document:
+    """
+    This function replaces the URLs within the Document with the edited ones in the modified_urls dictionary.
+
+    :param doc: The Word document object that is opened and being edited.
+    :type doc: Document
+    :param modified_urls: A dictionary where the keys are the hyperlink texts and the values are the new URLs to replace the old ones.
+    :type modified_urls: dict[str, str]
+    :return: Returns the updated Document object.
+    :rtype: Document
+    """
+    # Access the document's relationship dictionary
+    rels = doc.part.rels
+
+    # Iterate through each paragraph in the document
+    for paragraph in doc.paragraphs:
+        # Parse the paragraph XML
+        p_xml = paragraph._element
+        
+        # Find all hyperlink tags within the paragraph
+        for hyperlink in p_xml.findall(".//w:hyperlink", namespaces=p_xml.nsmap):
+            # Extract the relationship ID of the hyperlink
+            r_id = hyperlink.get("{http://schemas.openxmlformats.org/officeDocument/2006/relationships}id")
+            
+            if r_id and r_id in rels:
+                # Extract the URL using the relationship ID
+                current_url = rels[r_id]._target
+                
+                # Find the associated text with this hyperlink
+                hyperlink_text = ''.join(node.text for node in hyperlink.findall(".//w:t", namespaces=p_xml.nsmap))
+
+                # Check if the text has a corresponding new URL to replace
+                if hyperlink_text in modified_urls:
+                    new_url = modified_urls[hyperlink_text]  # Get the new URL
+                    
+                    # Update the relationship target to the new URL
+                    rels[r_id]._target = new_url
+    return doc
+
+def new_path(path:str) -> str:
+    """
+    Changes the current path that a user inputs to create a new document
+
+    :param path: this is the path to the current document saved as a string
+    :type path: str
+    :return: returns a new path
+    :rtype: str
+
+    :Example:
+    >>> path = "C:\\hello.docx"
+    >>> path_new = new_path(path)
+    >>> assert path_new == "C:\\hello new.docx"
+    """
+    # Regular expression to split the path into directory, filename, and extension
+    match = re.match(r"^(.*[\\/])?([^\\/]+)(\.[^\\/]+)?$", path)
+    
+    if match:
+        # Extract directory, filename, and extension
+        directory = match.group(1) or ""  # Includes trailing slash/backslash
+        filename = match.group(2) or ""   # Filename without extension
+        extension = match.group(3) or ""  # Extension (e.g., '.docx')
+
+        # Construct new filename by appending ' new' before the extension
+        new_filename = f"{filename} new{extension}"
+
+        # Combine directory and new filename to form the new path
+        new_path = f"{directory}{new_filename}"
+
+        return new_path
+    else:
+        # If the path does not match the pattern, return the original path
+        return path
+
+
+def save_doc(doc: Document, path: str) -> None:
+    """
+    Saves the modified Word document to the specified path.
+
+    :param doc: The Document object to be saved.
+    :type doc: Document
+    :param path: The file path where the document will be saved.
+    :type path: str
+    :return: None
+    """
+    try:
+        doc.save(path)
+        print(f"Document saved successfully at {path}.")
+    except Exception as e:
+        print(f"An error occurred while saving the document: {e}")
+        raise
 
 if __name__ == '__main__':
     main()
